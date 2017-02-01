@@ -5,7 +5,7 @@ import { Tier } from './shared/models/tier';
   selector: 'my-app',
   template: `
   	<header>
-  		This is a guide on colors.
+  		This is an educational guide on colors from the pigment spectrum.
   	</header>
 
     <body>
@@ -33,15 +33,22 @@ import { Tier } from './shared/models/tier';
         </div>
 
         <div class="col-sm-8">
-          <!-- Tier title and -->
+          <!-- If there is no active tier -->
+          <div *ngIf="!activeTier" style="width:80%;height:100%;display:inline;position:relative">
+            <div>
+              <h2>Choose a Tier</h2>
+              <small>Select a color tier from the menu to see what colors are included and how they are created.</small>
+            </div>
+          </div>
+          <!-- Tier title and description -->
           <div *ngIf="activeTier" style="width:80%;height:100%;display:inline;position:relative">
             <div>
               <h2> {{ activeTier.tierName }} </h2>
               <small> {{ activeTier.description }} </small>
             </div>
 
-            <!-- Color Squares -->
 
+            <!-- Color Squares -->
             <div class="flip-container" *ngFor="let color of activeTier.colors" ontouchstart="this.classList.toggle('hover');">
               <ul class="list-colors" 
               (click)="selectColor(color)"
@@ -49,45 +56,62 @@ import { Tier } from './shared/models/tier';
 
               <div class="flipper">
                 <!-- front content -->
-                <div class="front" [style.background-color]="color.colorHex">
-                  {{ color.colorName}}
+                <div class="front" [style.background-color]="color.colorHex1">
+                  <div class="frontDiv">
+                    {{ color.colorName}}
                   </div>
-                  <div class="back" [style.background-color]="color.colorHex">
-                    <!-- back content -->
-                      This color is made with {{ color.mix1 }} and {{ color.mix2 }}.
+                </div>
+                <div class="back" [ngSwitch]="activeTier.tierName">
+                  <!-- back content -->
+                  <div *ngSwitchCase="'Primary'" [style.background-color]="color.colorHex2">
+                    <div class="backDiv">
+                      {{ color.colorName }} cannot be created by mixing two colors.
+                    </div>
+                  </div>
+                  <div *ngSwitchCase="'Complementary'" [style.background-color]="color.colorHex2">
+                    <div class="backDiv">
+                      {{ color.mix2 }}
+                    </div>
+                  </div>
+                  <div *ngSwitchDefault [style.background-color]="color.colorHex2">
+                    <div class="backDiv">
+                      {{ color.colorName }} is made with {{ color.mix1 }} and {{ color.mix2 }}.
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
 
     </body>
-
-    <footer class="text-center">
-    	Copyright 2017.
-    </footer>
 
     
 
   `,
   styles: [`
 
+    .glyphicon-hand-left, .glyphicon-hand-right {
+      font-size: 40px;
+      content-align: center;
+    }
+
     /* entire container, keeps perspective */
     .flip-container {
       perspective: 1000px;
       display: inline-block;
-      margin-right: 10px;
+      margin-right: 5px;
     }
-      /* flip the pane when hovered */
-      .flip-container:hover .flipper, .flip-container.hover .flipper {
-        transform: rotateY(180deg);
-      }
+    /* flip the pane when hovered */
+    .flip-container:hover .flipper, .flip-container.hover .flipper {
+      transform: rotateY(180deg);
+    }
 
     .flip-container, .front, .back {
-
-      width: 150px;
-      height: 150px;
+      width: 175px;
+      height: 175px;
       text-align: center;
     }
 
@@ -101,6 +125,7 @@ import { Tier } from './shared/models/tier';
 
     /* hide back of pane during swap */
     .front, .back {
+      color: white;
       backface-visibility: hidden;
       position: absolute;
       top: 0;
@@ -109,6 +134,8 @@ import { Tier } from './shared/models/tier';
 
     /* front pane, placed above back */
     .front {
+      font-size: 18px;
+      text-transform: uppercase;
       z-index: 2;
       /* for firefox 31 */
       transform: rotateY(0deg);
@@ -117,7 +144,17 @@ import { Tier } from './shared/models/tier';
     /* back, initially hidden pane */
     .back {
       transform: rotateY(180deg);
+      font-size: 14px;
     }
+
+    .backDiv {
+      width: 175px;
+      height: 175px;
+    }
+
+    /*.frontDiv {
+      margin-top: 5px;
+    }*/
 
     .colors-list li {
       cursor: pointer;
@@ -128,6 +165,11 @@ import { Tier } from './shared/models/tier';
       transition: width 1s ease-in-out;
     }
 
+    .btn {
+      -webkit-box-shadow: 0px 0px 0px;
+      box-shadow: 0px 0px 0px;
+    }
+
     .button-element {
       border: 1px solid black;
       opacity: 1;
@@ -136,41 +178,75 @@ import { Tier } from './shared/models/tier';
   `]
 })
 export class AppComponent {
-    tiers: Tier[] =[
-        {
-          'tierName': "Primary",
-          'description': "A set of colors that can be combined to make a useful range of colors.",
-          'colors': [
-            {colorName: 'Red', colorHex: '#EF3340', mix1: null, mix2: null, label: 'Primary'},
-            {colorName: 'Blue', colorHex: '#10069F', mix1: null, mix2: null, label: 'Primary'},
-            {colorName: 'Yellow', colorHex: '#F7E300', mix1: null, mix2: null, label: 'Primary'}
-          ]
-        },
-        {
-          'tierName': "Secondary",
-          'description': "A color made by mixing two primary colors",
-          'colors': [
-            {colorName: 'Purple', colorHex: '#4E008E', mix1: 'Blue', mix2: 'Red', label: 'Secondary'},
-            {colorName: 'Orange', colorHex: '#FE5000', mix1: 'Red', mix2: 'Yellow', label: 'Secondary'},
-            {colorName: 'Green', colorHex: '#00AB84', mix1: 'Blue', mix2: 'Yellow', label: 'Secondary'}
-          ]
-        },
-        {
-          'tierName': "Tertiary",
-          'description': "A color made by mixing full saturation of one primary color with half saturation of another primary color and none of a third primary color.",
-          'colors': [
-            {colorName: 'Vermilion', colorHex: '#F9633B', mix1: 'Red', mix2: 'Orange', label: 'Tertiary'},
-            {colorName: 'Amber', colorHex: '#FAB75A', mix1: 'Orange', mix2: 'Yellow', label: 'Tertiary'},
-            {colorName: 'Chartreuse', colorHex: '#B5BF50', mix1: 'Yellow', mix2: 'Green', label: 'Tertiary'},
-            {colorName: 'Teal', colorHex: '#478589', mix1: 'Green', mix2: 'Blue', label: 'Tertiary'},
-            {colorName: 'Violet', colorHex: '#BF9BDE', mix1: 'Blue', mix2: 'Purple', label: 'Tertiary'},
-            {colorName: 'Magenta', colorHex: '#F1B2DC', mix1: 'Purple', mix2: 'Red', label: 'Tertiary'}
-          ]
-        }
+  tiers: Tier[] =[
+    {
+      'tierName': "Primary",
+      'description': "A set of colors that can be combined to make a useful range of colors. Note: These colors may not be created by combining any two colors.",
+      'colors': [
+        {colorName: 'Red', colorHex1: '#EF3340', colorHex2: '#EF3340', mix1: null, mix2: null},
+        {colorName: 'Blue', colorHex1: '#10069F', colorHex2: '#10069F', mix1: null, mix2: null},
+        {colorName: 'Yellow', colorHex1: '#F7E300', colorHex2: '#F7E300', mix1: null, mix2: null}
+      ]
+    },
+    {
+      'tierName': "Secondary",
+      'description': "A color made by mixing two primary colors",
+      'colors': [
+        {colorName: 'Purple', colorHex1: '#4E008E', colorHex2: '#4E008E', mix1: 'Blue', mix2: 'Red'},
+        {colorName: 'Orange', colorHex1: '#FE5000', colorHex2: '#FE5000', mix1: 'Red', mix2: 'Yellow'},
+        {colorName: 'Green', colorHex1: '#00AB84', colorHex2: '#00AB84', mix1: 'Blue', mix2: 'Yellow'}
+      ]
+    },
+    {
+      'tierName': "Tertiary",
+      'description': "A color made by mixing full saturation of one primary color with half saturation of another primary color and none of a third primary color.",
+      'colors': [
+        {colorName: 'Vermilion', colorHex1: '#E53000', colorHex2: '#E53000', mix1: 'Red', mix2: 'Orange'},
+        {colorName: 'Amber', colorHex1: '#FF9400', colorHex2: '#FF9400', mix1: 'Orange', mix2: 'Yellow'},
+        {colorName: 'Chartreuse', colorHex1: '#B6CC00', colorHex2: '#B6CC00', mix1: 'Yellow', mix2: 'Green'},
+        {colorName: 'Teal', colorHex1: '#00BFCC', colorHex2: '#00BFCC', mix1: 'Green', mix2: 'Blue'},
+        {colorName: 'Violet', colorHex1: '#8800FF', colorHex2: '#8800FF', mix1: 'Blue', mix2: 'Purple'},
+        {colorName: 'Magenta', colorHex1: '#FF00AD', colorHex2: '#FF00AD', mix1: 'Purple', mix2: 'Red'}
+      ]
+    },
+    {
+      'tierName': "Cool",
+      'description': "Cool colors are made with blue, green, purple, or some combination of these.",
+      'colors': [
+        {colorName: 'Blue', colorHex1:'#10069F', colorHex2: '#FFFFFF', mix1: null, mix2: null},
+        {colorName: 'Purple', colorHex1: '#4E008E', colorHex2: '#4E008E', mix1: 'Blue', mix2: 'Red'},
+        {colorName: 'Green', colorHex1: '#00AB84', colorHex2: '#00AB84', mix1: 'Blue', mix2: 'Yellow'},
+        {colorName: 'Teal', colorHex1: '#00BFCC', colorHex2: '#00BFCC', mix1: 'Green', mix2: 'Blue'},
+        {colorName: 'Violet', colorHex1: '#8800FF', colorHex2: '#8800FF', mix1: 'Blue', mix2: 'Purple'},
+        {colorName: 'Magenta', colorHex1: '#FF00AD', colorHex2: '#FF00AD', mix1: 'Purple', mix2: 'Red'},
+        {colorName: 'Chartreuse ', colorHex1: '#7fff00', colorHex2: '#7fff00', mix1: 'Yellow', mix2: 'Green'}
+      ]
+    },
+    {
+      'tierName': "Warm",
+      'description': "Warm colors are made with red, yellow, orange, or some combination of these.",
+      'colors': [
+        {colorName: 'Red', colorHex1: '#EF3340', colorHex2: '#FFFFFF', mix1: null, mix2: null},
+        {colorName: 'Yellow', colorHex1: '#F7E300', colorHex2: '#FFFFFF', mix1: null, mix2: null},
+        {colorName: 'Orange', colorHex1: '#FE5000', colorHex2: '#FE5000', mix1: 'Red', mix2: 'Yellow'},
+        {colorName: 'Vermilion', colorHex1: '#E53000', colorHex2: '#E53000', mix1: 'Red', mix2: 'Orange'},
+        {colorName: 'Amber', colorHex1: '#FF9400', colorHex2: '#FF9400', mix1: 'Orange', mix2: 'Yellow'},
+        {colorName: 'Magenta', colorHex1: '#FF00AD', colorHex2: '#FF00AD', mix1: 'Purple', mix2: 'Red'},
+        {colorName: 'Chartreuse ', colorHex1: '#7fff00', colorHex2: '#7fff00', mix1: 'Yellow', mix2: 'Green'}
+      ]
+    },
+    {
+      'tierName': "Complementary",
+      'description': "Pairs of colors which, when combined, cancel each other out producing a neutral-scale color like grey or brown.",
+      'colors': [
+        {colorName: 'Red', colorHex1: '#EF3340', colorHex2: '#00AB84', mix1: 'Red', mix2: 'Green',},
+        {colorName: 'Yellow', colorHex1: '#F7E300', colorHex2: '#4E008E', mix1: 'Yellow', mix2: 'Purple'},
+        {colorName: 'Blue', colorHex1: '#10069F', colorHex2: '#FE5000', mix1: 'Blue', mix2: 'Orange'}
+      ]
+    }
   ];
   
   activeTier;
-  activeColor;
 
   selectTier(tier) {
     this.activeTier = tier;
